@@ -75,10 +75,10 @@ class ScreenGuidedTrainingWindow(PageWindow):
         self.basewindow = basewindow
 
         # window properties specific to the collection window
-        self.title_font    = self.settings_window.title_font
-        self.subtitle_font = self.settings_window.subtitle_font
-        self.text_font     = self.settings_window.text_font
-        self.massive_font  = self.settings_window.massive_font
+        self.title_font    = self.basewindow.title_font
+        self.subtitle_font = self.basewindow.subtitle_font
+        self.text_font     = self.basewindow.text_font
+        self.massive_font  = self.basewindow.massive_font
         self.setObjectName("Collection_Window")
         self.resize(744, 870)
         
