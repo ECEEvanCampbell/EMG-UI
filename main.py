@@ -2,7 +2,7 @@
 This file outlines the single-page GUI application that all functionality is built around.
 '''
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QAction
 from utils import PageWindow
 from connectionWindow import ConnectionWindow
@@ -36,6 +36,16 @@ class Window(QtWidgets.QMainWindow):
         self.setGeometry(0,0,1280, 720)
         self.stacked_widget = QtWidgets.QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
+
+
+        self.massive_font = QtGui.QFont()
+        self.massive_font.setPointSize(22)
+        self.title_font = QtGui.QFont()
+        self.title_font.setPointSize(16)
+        self.subtitle_font = QtGui.QFont()
+        self.subtitle_font.setPointSize(14)
+        self.text_font  = QtGui.QFont()
+        self.text_font.setPointSize(11)
 
         self.m_pages = {}
         # if we want to register a new functionality (new page), include the PageWindow here
