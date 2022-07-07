@@ -9,7 +9,7 @@ from connectionWindow import ConnectionWindow
 from screenGuidedTrainingSetupWindow import ScreenGuidedTrainingSetupWindow
 from screenGuidedTrainingWindow import ScreenGuidedTrainingWindow
 from modelTrainingWindow import ModelTrainingWindow
-from fittsLawSetupWindow import ModelTestingWindow
+from fittsLawSetupWindow import FittsLawSetupWindow
 
 # think of this as a greeting screen or something
 class MainWindow(PageWindow):
