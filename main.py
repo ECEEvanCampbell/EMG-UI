@@ -6,14 +6,16 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QAction
 from utils import PageWindow
 from connectionWindow import ConnectionWindow
+from screenGuidedTrainingSetupWindow import ScreenGuidedTrainingSetupWindow
 from screenGuidedTrainingWindow import ScreenGuidedTrainingWindow
 from modelTrainingWindow import ModelTrainingWindow
+from fittsLawSetupWindow import ModelTestingWindow
 
-
-
+# think of this as a greeting screen or something
 class MainWindow(PageWindow):
-    def __init__(self):
+    def __init__(self, basewindow):
         super().__init__()
+        self.basewindow = basewindow
         self.initUI()
         self.setWindowTitle("MainWindow")
 
@@ -37,12 +39,16 @@ class Window(QtWidgets.QMainWindow):
 
         self.m_pages = {}
         # if we want to register a new functionality (new page), include the PageWindow here
-        self.register(ConnectionWindow(), "connect")
-        self.register(ScreenGuidedTrainingWindow(), "screenguidedtraining")
-        self.register(ModelTrainingWindow(), "modeltraining")
+        self.register(ConnectionWindow(self), "connect")
+        self.register(ScreenGuidedTrainingSetupWindow(self), "screenguidedtrainingsetup")
+        self.register(ScreenGuidedTrainingWindow(self), "screenguidedtraining")
+        self.register(ModelTrainingWindow(self), "modeltraining")
+        self.register(FittsLawSetupWindow(self), "fittslawsetup")
         
-        self.register(MainWindow(), "main")
+        self.register(MainWindow(self), "main")
         
+        self.device = {}
+        self.model  = {}
 
         self.goto("main")
 
@@ -64,6 +70,11 @@ class Window(QtWidgets.QMainWindow):
         train_action = trainmenu.addAction("Prepare ML Model")
         train_action.setStatusTip("Prepare a pipeline for EMG gesture recognition using collected data.")
         train_action.triggered.connect(lambda: self.goto("modeltraining"))
+
+        testmenu = menubar.addMenu("Test")
+        test_action = testmenu.addAction("Fitts Law Test")
+        test_action.setStatusTip("Use a trained model to perform an online evaluation (Fitts Law).")
+        test_action.triggered.connect(lambda: self.goto("fittslawsetup"))
 
     def register(self, widget, name):
         self.m_pages[name] = widget
