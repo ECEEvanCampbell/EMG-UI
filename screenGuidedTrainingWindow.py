@@ -59,7 +59,7 @@ class CollectionWorker(QObject):
         rep_label = self.rep_procession[0]
         new_labels = np.array([class_label, rep_label])
 
-        self.sgt.settings_window.my_reader.update_custom_columns(new_labels)
+        self.sgt.basewindow.device['reader'].update_custom_columns(new_labels)
 
         while count < self.timer_duration*10:
             count += 1
@@ -70,7 +70,7 @@ class CollectionWorker(QObject):
     
 class ScreenGuidedTrainingWindow(PageWindow):
     def __init__(self, basewindow):
-        super(ScreenGuidedTrainingWindow, self).__init__()
+        super().__init__()
         # Lets store the handle to the settings window as a 
         self.basewindow = basewindow
 
@@ -79,18 +79,16 @@ class ScreenGuidedTrainingWindow(PageWindow):
         self.subtitle_font = self.basewindow.subtitle_font
         self.text_font     = self.basewindow.text_font
         self.massive_font  = self.basewindow.massive_font
-        self.setObjectName("Collection_Window")
-        self.resize(744, 870)
         
         # spawn all the widgets relevant for the collection window
         self.initUI()
 
 
-        # perform collection
-        self.basewindow.device['reader'].start() # start streaming loop
-        self.basewindow.device['reader'].wait_for_reading_loop()
-        self.collect()
 
+        
+    def onRender(self):
+        if  ("name" in self.basewindow.device):
+            self.collect()
 
     def initUI(self):
         self.setWindowTitle("Screen Guided Training")
@@ -105,7 +103,7 @@ class ScreenGuidedTrainingWindow(PageWindow):
 
         ## IMAGE WIDGET - this is the visual prompt of the motion the user should perform
         self.image = QtWidgets.QLabel(self.centralwidget)
-        self.image.setGeometry(QtCore.QRect(30, 10, 511, 651))
+        self.image.setGeometry(QtCore.QRect(30, 10, 350, 450))
         self.image.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.image.setText("")
         self.image.setPixmap(QtGui.QPixmap("imgs/Hand open.jpg"))
@@ -114,37 +112,37 @@ class ScreenGuidedTrainingWindow(PageWindow):
 
         ## PROGRESS BAR WIDGET - this indicates how long the user should hold the gesture
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
-        self.progressBar.setGeometry(QtCore.QRect(30, 690, 511, 41))
+        self.progressBar.setGeometry(QtCore.QRect(30, 475, 511, 41))
         self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName("progressBar")
 
         ## STOP BUTTON WIDGET - 
         self.stop_button = QtWidgets.QPushButton(self.centralwidget)
-        self.stop_button.setGeometry(QtCore.QRect(570, 700, 151, 81))
+        self.stop_button.setGeometry(QtCore.QRect(570, 475, 151, 81))
         self.stop_button.setFont(self.title_font)
         self.stop_button.setObjectName("stop_button")
         
         ## MOTION LABEL WIDGET - text of prompted motion
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(150, 750, 291, 40))
+        self.label.setGeometry(QtCore.QRect(150, 475, 291, 40))
         self.label.setFont(self.massive_font)
         self.label.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
 
-        self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
+        # self.retranslateUi()
+        # QtCore.QMetaObject.connectSlotsByName(self)
 
         # ATTACH CALLBACK FUNCTIONS TO BUTTONS 
         self.stop_button.clicked.connect(self.stop_button_pressed)
 
 
 
-    def retranslateUi(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("Collection_Window", "MainWindow"))
-        self.stop_button.setText(_translate("Collection_Window", "Stop"))
-        self.label.setText(_translate("Collection_Window", "REST"))
+    # def retranslateUi(self):
+    #     _translate = QtCore.QCoreApplication.translate
+    #     self.setWindowTitle(_translate("Collection_Window", "MainWindow"))
+    #     self.stop_button.setText(_translate("Collection_Window", "Stop"))
+    #     self.label.setText(_translate("Collection_Window", "REST"))
 
 
     def stop_button_pressed(self):
@@ -155,6 +153,12 @@ class ScreenGuidedTrainingWindow(PageWindow):
         config = self.basewindow.collection_vars
         motion_procession = config['motions'] * config['reps']
         rep_procession = []
+
+        # perform collection
+        self.basewindow.device['reader'].start() # start streaming loop
+        self.basewindow.device['reader'].wait_for_reading_loop()
+
+
         for r in range(config['reps']):
             if config['rest_duration'] > 0:
                 factor = 2
