@@ -46,31 +46,31 @@ class ConnectionWindow(PageWindow):
         self.buffer_duration_label.setFont(self.subtitle_font)
         self.buffer_duration_label.setGeometry(QtCore.QRect(20, 110, 200, 40))
         ## Windowsize area
-        self.buffer_duration_label = QLineEdit(".250",self.centralwidget)
-        self.buffer_duration_label.setGeometry(QtCore.QRect(20, 160, 200, 40))
+        self.buffer_duration_input = QLineEdit(".250",self.centralwidget)
+        self.buffer_duration_input.setGeometry(QtCore.QRect(20, 160, 200, 40))
 
 
         ## COMBO BOX
         self.combobox = QComboBox(self.centralwidget)
         self.combobox.addItems(['Select', 'Delsys', 'SiFi']) 
-        self.combobox.setGeometry(QtCore.QRect(20, 210, 200, 40))
+        self.combobox.setGeometry(QtCore.QRect(20, 260, 200, 40))
         self.combobox.activated[str].connect(self.system_selected)
 
         self.combo_box_label = QtWidgets.QLabel(self.centralwidget)
-        self.combo_box_label.setGeometry(QtCore.QRect(20, 160, 200, 40))
+        self.combo_box_label.setGeometry(QtCore.QRect(20, 210, 200, 40))
         self.combo_box_label.setFont(self.text_font)
         self.combo_box_label.setText("Select Device Type:")
 
         # CONNECT BUTTON
         self.connect_button = QtWidgets.QPushButton(self.centralwidget)
-        self.connect_button.setGeometry(QtCore.QRect(20, 260, 200, 40))
+        self.connect_button.setGeometry(QtCore.QRect(20, 310, 200, 40))
         self.connect_button.setFont(self.title_font)
         self.connect_button.clicked.connect(self.connect_pressed)
         self.connect_button.setText("Connect")
 
         # DISCONNECT BUTTON
         self.disconnect_button = QtWidgets.QPushButton(self.centralwidget)
-        self.disconnect_button.setGeometry(QtCore.QRect(20, 310, 200, 40))
+        self.disconnect_button.setGeometry(QtCore.QRect(20, 360, 200, 40))
         self.disconnect_button.setFont(self.title_font)
         self.disconnect_button.clicked.connect(self.disconnect_pressed)
         self.disconnect_button.setText("Disconnect")
@@ -92,7 +92,7 @@ class ConnectionWindow(PageWindow):
                 self.basewindow.device['reader'].register_custom_columns(num_columns=2)
                 rnd_number = np.random.randint(1e6)
                 buffer_length = float(self.buffer_duration_input.text())
-                (self.basewindow.device['emg_buf'], self.basewindow.device['aux_buf']) = self.basewindow['reader'].create_shared_matrix(buffer_duration=buffer_length, emg_shared_matrix_name="Electromyography"+str(rnd_number), aux_shared_matrix_name='Auxilliary'+str(rnd_number))
+                (self.basewindow.device['emg_buf'], self.basewindow.device['aux_buf']) = self.basewindow.device['reader'].create_shared_matrix(buffer_duration=buffer_length, emg_shared_matrix_name="Electromyography"+str(rnd_number), aux_shared_matrix_name='Auxilliary'+str(rnd_number))
                 self.basewindow.device['name'] = 'Delsys'
             elif self.sensor == "SiFi":
                 # do SiFi stuff
@@ -105,6 +105,7 @@ class ConnectionWindow(PageWindow):
             msg.setIcon(QMessageBox.Information)
             msg.setStandardButtons(QMessageBox.Ok)
             x = msg.exec_() # shows the message box
+            self.basewindow.goto("main")
 
         
         except:
@@ -115,7 +116,7 @@ class ConnectionWindow(PageWindow):
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec_() # shows the message box
 
-            self.basedwindow.device = {}
+            self.basewindow.device = {}
 
     def disconnect_pressed(self):
         try:
