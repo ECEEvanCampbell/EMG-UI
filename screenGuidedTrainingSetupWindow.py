@@ -247,6 +247,7 @@ class ScreenGuidedTrainingSetupWindow(PageWindow):
         self.basewindow.collection_vars = self.get_settings()
         self.basewindow.goto('screenguidedtraining')
         
+        
 
     def get_settings(self):
         config = {
