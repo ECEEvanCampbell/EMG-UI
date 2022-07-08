@@ -5,4 +5,7 @@ class PageWindow(QtWidgets.QMainWindow):
 
     def goto(self, name):
         self.gotoSignal.emit(name)
+    
+    def onRender(self):
+        pass
 
