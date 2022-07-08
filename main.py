@@ -46,7 +46,10 @@ class Window(QtWidgets.QMainWindow):
         self.subtitle_font.setPointSize(14)
         self.text_font  = QtGui.QFont()
         self.text_font.setPointSize(11)
-
+        
+        self.device = {}
+        self.model  = {}
+        
         self.m_pages = {}
         # if we want to register a new functionality (new page), include the PageWindow here
         self.register(ConnectionWindow(self), "connect")
@@ -57,8 +60,7 @@ class Window(QtWidgets.QMainWindow):
         
         self.register(MainWindow(self), "main")
         
-        self.device = {}
-        self.model  = {}
+        
 
         self.goto("main")
 
@@ -74,7 +76,7 @@ class Window(QtWidgets.QMainWindow):
         collectmenu = menubar.addMenu("Collect")
         collect_action = collectmenu.addAction("Screen Guided Training")
         collect_action.setStatusTip("Collect signals while prompting the user using images.")
-        collect_action.triggered.connect(lambda: self.goto("screenguidedtraining"))
+        collect_action.triggered.connect(lambda: self.goto("screenguidedtrainingsetup"))
 
         trainmenu = menubar.addMenu("Train")
         train_action = trainmenu.addAction("Prepare ML Model")
@@ -98,6 +100,7 @@ class Window(QtWidgets.QMainWindow):
             widget = self.m_pages[name]
             self.stacked_widget.setCurrentWidget(widget)
             self.setWindowTitle(widget.windowTitle())
+            widget.onRender()
 
 
 if __name__ == "__main__":
