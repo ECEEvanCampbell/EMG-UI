@@ -98,9 +98,9 @@ class Window(QtWidgets.QMainWindow):
     def goto(self, name):
         if name in self.m_pages:
             widget = self.m_pages[name]
+            widget.onRender()
             self.stacked_widget.setCurrentWidget(widget)
             self.setWindowTitle(widget.windowTitle())
-            widget.onRender()
 
 
 if __name__ == "__main__":
