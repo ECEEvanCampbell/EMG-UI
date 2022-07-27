@@ -22,6 +22,7 @@ class DataWorker(QObject):
         self.fl = fl
         self.fl.game.device['reader'].start() # start streaming loop
         self.fl.game.device['reader'].wait_for_reading_loop()
+        sleep(2)
 
     def stream(self):
         while self.fl.trial < self.fl.max_trial:
@@ -83,7 +84,7 @@ class FittsLawTest:
 
         # interface objects
         self.circles = []
-        self.cursor  = None
+        self.cursor  = self.cursor = pygame.Rect(self.game.width//2 - 7, self.game.height//2 - 7, 14, 14)
         self.goal_circle = -1
         self.get_new_goal_circle()
 
@@ -133,8 +134,6 @@ class FittsLawTest:
             
     
     def draw_cursor(self):
-        if self.cursor == None:
-            self.cursor = pygame.Rect(self.game.width//2 - 7, self.game.height//2 - 7, 14, 14)
         pygame.draw.circle(self.game.screen, self.YELLOW, (self.cursor.x + 7, self.cursor.y + 7), 7)
 
     def draw_timer(self):
@@ -165,6 +164,7 @@ class FittsLawTest:
             pygame.event.post(pygame.event.Event(pygame.USEREVENT + self.goal_circle))
             self.Event_Flag = True
         else:
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT + self.num_of_circles))
             self.Event_Flag = False
 
     def check_events(self):
@@ -177,7 +177,7 @@ class FittsLawTest:
                 sys.exit()
 
             ## CHECKING FOR COLLISION BETWEEN CURSOR AND RECTANGLES
-            if event.type >= pygame.USEREVENT and event.type < pygame.USEREVENT + 12:
+            if event.type >= pygame.USEREVENT and event.type < pygame.USEREVENT + self.num_of_circles:
                 if self.dwell_timer is None:
                     self.dwell_timer = time.perf_counter()
                 else:
@@ -195,7 +195,7 @@ class FittsLawTest:
                             sys.exit()
 
 
-            else:
+            elif event.type == pygame.USEREVENT + self.num_of_circles:
                 if self.Event_Flag == False:
                     self.dwell_timer = None
                     self.duration = 0
@@ -304,13 +304,14 @@ class Game:
         self.fitts_law.collection_worker() # Make thread to get data on
         #collection_worker = DataWorker(self.fitts_law)
         self.fitts_law.done = False
+        
         while not self.fitts_law.done:
             # updated frequently for graphics & gameplay
             self.fitts_law.run()
             pygame.display.update()
             self.clock.tick(self.fps)
             # remove this line when collection worker has been put back
-        #    collection_worker.stream()
+            #collection_worker.stream()
 
 
 if __name__ == "__main__":
