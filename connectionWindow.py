@@ -121,10 +121,11 @@ class ConnectionWindow(PageWindow):
     def disconnect_pressed(self):
         try:
             if self.sensor == "Delsys":
-                self.basewindow.device['reader'].shutdown()
-                self.basewindow.device['reader'].join()
-                self.basewindow.device['emg_buf'].close()
-                self.basewindow.device['aux_buf'].close()
+                if not self.basewindow.device['reader']._closed:
+                    self.basewindow.device['reader'].shutdown()
+                    self.basewindow.device['reader'].join()
+                    self.basewindow.device['emg_buf'].close()
+                    self.basewindow.device['aux_buf'].close()
             elif self.sensor == "SiFi":
                 pass
         except:
