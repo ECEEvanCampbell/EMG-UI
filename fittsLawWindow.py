@@ -274,12 +274,11 @@ class FittsLawTest:
             pickle.dump(self.log_dictionary, f)
 
     def closeEvent(self, event):
-        # TODO: fix this to use new device format
-        self.my_reader.shutdown()
-        self.my_reader.join()
-        self.emg_buf.close()
-        self.aux_buf.close()
-
+        self.game.device['reader'].shutdown()
+        self.game.device['reader'].join()
+        self.game.device['emg_buf'].close()
+        self.game.device['aux_buf'].close()
+        self.done = True
         event.accept()
         
 
@@ -305,14 +304,15 @@ class Game:
     def run(self):
         # TODO: when you don't need to debug the EMG/classifier, use collectionworker again
         #self.fitts_law.collection_worker() # Make thread to get data on
-        collection_worker = DataWorker(self.fitts_law)
-        while True:
+        #collection_worker = DataWorker(self.fitts_law)
+        self.fitts_law.done = False
+        while not self.fitts_law.done:
             # updated frequently for graphics & gameplay
             self.fitts_law.run()
             pygame.display.update()
             self.clock.tick(self.fps)
             # remove this line when collection worker has been put back
-            collection_worker.stream()
+        #    collection_worker.stream()
 
 
 if __name__ == "__main__":
