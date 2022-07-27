@@ -454,7 +454,7 @@ class Feature_Extractor:
                         'MNF',
                         'MNP',
                         'MPK',
-                        'SAMPEN',
+                        #'SAMPEN',
                         'SKEW',
                         'KURT']
         return feature_list
