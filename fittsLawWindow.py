@@ -20,7 +20,6 @@ class DataWorker(QObject):
     def __init__(self, fl):
         super(DataWorker, self).__init__()
         self.fl = fl
-        # TODO: add check for if the reader hasn't been started.
         self.fl.game.device['reader'].start() # start streaming loop
         self.fl.game.device['reader'].wait_for_reading_loop()
 
@@ -57,7 +56,7 @@ class DataWorker(QObject):
             toc = time.perf_counter()
             duration = toc - tic
             self.direction_ready.emit()
-            sleep(self.fl.window_increment - duration) 
+            sleep((self.fl.window_increment/1000 - duration))
         
         self.finished.emit()
 
@@ -90,8 +89,6 @@ class FittsLawTest:
 
         self.current_direction = [0,0]
         self.window_increment = 50 # in ms
-        # TODO: initialize classifier from feature selection config
-        # TODO: connect to delsys 
 
         ## Track if connected to Delsys
         self.sensor_connected = True
@@ -154,6 +151,7 @@ class FittsLawTest:
             self.print_caption()
             self.draw()
             self.run_game_process()
+            self.move()
     
     def run_game_process(self):
         self.check_collisions()
@@ -202,7 +200,9 @@ class FittsLawTest:
                     self.dwell_timer = None
                     self.duration = 0
 
-            #            HO
+           
+    def move(self):
+         #               HO
             ##           ^
             #            l 
             #            l
@@ -211,11 +211,10 @@ class FittsLawTest:
             #            l 
             #            v 
             #           PoG
-
-            if self.cursor.x + self.current_direction[0] > 0 and self.cursor.x + self.current_direction[0] < self.game.width:
-                self.cursor.x += self.current_direction[0]
-            if self.cursor.y + self.current_direction[1] > 0 and self.cursor.y + self.current_direction[1] < self.game.height:
-                self.cursor.y += self.current_direction[1]
+        if self.cursor.x + self.current_direction[0] > 0 and self.cursor.x + self.current_direction[0] < self.game.width:
+            self.cursor.x += self.current_direction[0]
+        if self.cursor.y + self.current_direction[1] > 0 and self.cursor.y + self.current_direction[1] < self.game.height:
+            self.cursor.y += self.current_direction[1]
     
     def check_keys(self):
         key = pygame.key.get_pressed()
@@ -302,8 +301,7 @@ class Game:
         self.fitts_law = FittsLawTest(self)
 
     def run(self):
-        # TODO: when you don't need to debug the EMG/classifier, use collectionworker again
-        #self.fitts_law.collection_worker() # Make thread to get data on
+        self.fitts_law.collection_worker() # Make thread to get data on
         #collection_worker = DataWorker(self.fitts_law)
         self.fitts_law.done = False
         while not self.fitts_law.done:
