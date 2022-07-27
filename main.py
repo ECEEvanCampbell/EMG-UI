@@ -10,6 +10,14 @@ from screenGuidedTrainingSetupWindow import ScreenGuidedTrainingSetupWindow
 from screenGuidedTrainingWindow import ScreenGuidedTrainingWindow
 from modelTrainingWindow import ModelTrainingWindow
 from fittsLawSetupWindow import FittsLawSetupWindow
+from visualizationWindowSetup import VisualizationWindowSetup
+from visualizationWindow import VisualizationWindow
+
+## COMMENTS FROM RUNNING IT THROUGH FIRST TIME
+# During sgt the stop button is not visible
+# Photo should be centered over the progress bar (it just looking a little odd right now)
+# under the test tab the text needs to be cleared when indicating that the system is connected/model is trained, 
+
 
 # think of this as a greeting screen or something
 class MainWindow(PageWindow):
@@ -57,6 +65,8 @@ class Window(QtWidgets.QMainWindow):
         self.register(ScreenGuidedTrainingWindow(self), "screenguidedtraining")
         self.register(ModelTrainingWindow(self), "modeltraining")
         self.register(FittsLawSetupWindow(self), "fittslawsetup")
+        self.register(VisualizationWindowSetup(self), "visualizationsetup")
+        self.register(VisualizationWindow(self), "visualization")
         
         self.register(MainWindow(self), "main")
         
@@ -77,6 +87,9 @@ class Window(QtWidgets.QMainWindow):
         collect_action = collectmenu.addAction("Screen Guided Training")
         collect_action.setStatusTip("Collect signals while prompting the user using images.")
         collect_action.triggered.connect(lambda: self.goto("screenguidedtrainingsetup"))
+        collect_action2 = collectmenu.addAction("Visualize")
+        collect_action2.setStatusTip("View signals while collecting data")
+        collect_action2.triggered.connect(lambda: self.goto("visualizationsetup"))
 
         trainmenu = menubar.addMenu("Train")
         train_action = trainmenu.addAction("Prepare ML Model")
