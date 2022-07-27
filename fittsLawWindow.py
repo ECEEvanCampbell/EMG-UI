@@ -77,7 +77,7 @@ class FittsLawTest:
         self.pos_factor1 = self.big_rad/2
         self.pos_factor2 = (self.big_rad * math.sqrt(3))//2
 
-        self.VEL = 3
+        self.VEL = 1
         self.dwell_time = 3
         self.num_of_circles = self.game.num_circles # this value will be a user input
 
@@ -186,7 +186,7 @@ class FittsLawTest:
                 if self.duration >= self.dwell_time:
                     self.get_new_goal_circle()
                     self.dwell_timer = None
-                    if self.trial < self.max_trial:
+                    if self.trial < self.max_trial-1: # -1 because max_trial is 1 indexed
                         self.trial += 1
                     else:
                         if self.LOGGING:
@@ -216,20 +216,6 @@ class FittsLawTest:
         if self.cursor.y + self.current_direction[1] > 0 and self.cursor.y + self.current_direction[1] < self.game.height:
             self.cursor.y += self.current_direction[1]
     
-    def check_keys(self):
-        key = pygame.key.get_pressed()
-        self.current_direction = [0,0]
-        if key[pygame.K_LEFT]  and self.cursor.x - self.VEL > 0:
-            self.current_direction[0] -= self.VEL # move to the left
-        if key[pygame.K_RIGHT] and self.cursor.x + self.VEL < self.game.width:
-             self.current_direction[0] += self.VEL # move to the right
-        if key[pygame.K_UP]    and self.cursor.y - self.VEL > 0:
-             self.current_direction[1] -= self.VEL # move upwards
-        if key[pygame.K_DOWN]  and self.cursor.y + self.VEL < self.game.height:
-             self.current_direction[1] += self.VEL # move downwards 
-        # apply velocity to cursor
-        self.cursor.x += self.current_direction[0]
-        self.cursor.y += self.current_direction[1]
     
     def get_new_goal_circle(self):
         # base case: no checking for same goal circle
