@@ -2,3 +2,4 @@ Data/*
 Results/*
 *.pyc
 *.csv
+*.pkl
