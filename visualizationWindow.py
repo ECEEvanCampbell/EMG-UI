@@ -3,6 +3,7 @@ from utils import PageWindow
 import matplotlib.pyplot as plt
 from biomedical_hardware_readers import DelsysTrignoReader
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
+from PyQt5.QtWidgets import QMainWindow
 
 # Need to do this on a thread
 class displayWorker(QObject):
@@ -27,7 +28,7 @@ class displayWorker(QObject):
         plt.close()
         self.finished.emit()
 
-class VisualizationWindow(PageWindow):
+class VisualizationWindow(QMainWindow):
     def __init__(self, basewindow):
         super().__init__()
         # Lets store the handle to the settings window as a 
@@ -36,6 +37,7 @@ class VisualizationWindow(PageWindow):
         self.sensor_num = self.basewindow.vis_vars
 
     def display(self):
+        print("I'm working")
         self.make_parallel_worker()
 
     def make_parallel_worker(self,):

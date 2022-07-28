@@ -1,8 +1,11 @@
 from utils import PageWindow
 from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMessageBox
 
-class VisualizationWindowSetup(PageWindow):
+# DON'T THINK THIS SCRIPT IS NEEDED
+
+class VisualizationWindowSetup(QMainWindow):
     def __init__(self, basewindow):
         super().__init__()
 

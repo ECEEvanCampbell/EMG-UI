@@ -13,7 +13,7 @@ from modelManualTrainingWindow import ManualModelTrainingWindow
 from modelSelectTrainingWindow import SelectModelTrainingWindow
 from modelManageWindow import ManageModelTrainingWindow
 from fittsLawSetupWindow import FittsLawSetupWindow
-from visualizationWindowSetup import VisualizationWindowSetup
+#from visualizationWindowSetup import VisualizationWindowSetup
 from visualizationWindow import VisualizationWindow
 
 
@@ -68,8 +68,8 @@ class Window(QtWidgets.QMainWindow):
         self.register(SelectModelTrainingWindow(self), "selectmodeltraining")
         self.register(ManageModelTrainingWindow(self), "managemodeltraining")
         self.register(FittsLawSetupWindow(self), "fittslawsetup")
-        self.register(VisualizationWindowSetup(self), "visualizationsetup")
-        self.register(VisualizationWindow(self), "visualization")
+        #self.register(VisualizationWindowSetup(self), "visualizationsetup")
+        #self.register(VisualizationWindow(self), "visualization")
         
         self.register(MainWindow(self), "main")
         
@@ -92,7 +92,8 @@ class Window(QtWidgets.QMainWindow):
         collect_action.triggered.connect(lambda: self.goto("screenguidedtrainingsetup"))
         collect_action2 = collectmenu.addAction("Visualize")
         collect_action2.setStatusTip("View signals while collecting data")
-        collect_action2.triggered.connect(lambda: self.goto("visualizationsetup"))
+        self.vis_window = VisualizationWindow(self)
+        collect_action2.triggered.connect(lambda: self.vis_window.display())
 
         trainmenu = menubar.addMenu("Train")
         
