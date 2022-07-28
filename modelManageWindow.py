@@ -41,7 +41,7 @@ class ManageModelTrainingWindow(PageWindow):
         self.model_save_button.clicked.connect(self.save_model)
 
         self.model_load_button = QtWidgets.QPushButton(self.centralwidget)
-        self.model_load_button.setGeometry(QtCore.QRect(5, 75, 90, 30))
+        self.model_load_button.setGeometry(QtCore.QRect(105, 75, 90, 30))
         self.model_load_button.setText("Load Model")
         self.model_load_button.clicked.connect(self.load_model)
 
