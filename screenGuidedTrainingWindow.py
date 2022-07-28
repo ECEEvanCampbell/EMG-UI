@@ -80,6 +80,8 @@ class ScreenGuidedTrainingWindow(PageWindow):
         self.text_font     = self.basewindow.text_font
         self.massive_font  = self.basewindow.massive_font
         
+        self.setObjectName("sgt_window")
+
         # spawn all the widgets relevant for the collection window
         self.initUI()
 
@@ -88,7 +90,7 @@ class ScreenGuidedTrainingWindow(PageWindow):
         
     def onRender(self):
         if  ("name" in self.basewindow.device):
-            self.basewindow.state.append['COLLECTING']
+            self.basewindow.state.append('COLLECTING')
             self.collect()
             self.basewindow.state.remove('COLLECTING')
 
@@ -140,11 +142,11 @@ class ScreenGuidedTrainingWindow(PageWindow):
 
 
 
-    # def retranslateUi(self):
-    #     _translate = QtCore.QCoreApplication.translate
-    #     self.setWindowTitle(_translate("Collection_Window", "MainWindow"))
-    #     self.stop_button.setText(_translate("Collection_Window", "Stop"))
-    #     self.label.setText(_translate("Collection_Window", "REST"))
+    def retranslateUi(self):
+        _translate = QtCore.QCoreApplication.translate
+        #self.setWindowTitle(_translate("Collection_Window", "MainWindow"))
+        self.stop_button.setText(_translate("sgt_window", "Stop"))
+        #self.label.setText(_translate("Collection_Window", "REST"))
 
 
     def stop_button_pressed(self):

@@ -131,10 +131,10 @@ class ScreenGuidedTrainingSetupWindow(PageWindow):
         self.start_button.setFont(self.title_font)
         self.start_button.setObjectName("start_button")
         # VISUALIZATION WINDOW
-        self.visualize_button = QtWidgets.QPushButton(self.centralwidget)
-        self.visualize_button.setGeometry(QtCore.QRect(290, 380, 131, 41))
-        self.visualize_button.setFont(self.title_font)
-        self.visualize_button.setObjectName("visualization_button")
+        #self.visualize_button = QtWidgets.QPushButton(self.centralwidget)
+        #self.visualize_button.setGeometry(QtCore.QRect(290, 380, 131, 41))
+        #self.visualize_button.setFont(self.title_font)
+        #self.visualize_button.setObjectName("visualization_button")
 
         ## ACTUALLY POPULATE VISABLE LABEL FIELDS W/ TEXT
         self.retranslateUi()
@@ -174,7 +174,7 @@ class ScreenGuidedTrainingSetupWindow(PageWindow):
         # self.connect_button.setText(_translate("settings_window", "Connect"))
         self.start_button.setText(_translate("settings_window", "Start"))
         # self.combo_box_label.setText(_translate("settings_window", "System Selection:"))
-        self.visualize_button.setText(_translate("settings_window", "Visualize"))
+        #self.visualize_button.setText(_translate("settings_window", "Visualize"))
 
     def no_motion_gesture_clicked(self, state):
         if (QtCore.Qt.Checked == state):
