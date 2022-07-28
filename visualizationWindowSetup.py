@@ -78,14 +78,18 @@ class VisualizationWindowSetup(PageWindow):
             return
         
         # get all the info from the current settings
-        self.basewindow.vis_vars = self.get_settings() # if more parameters are added
-        self.basewindow.goto('visualization')
+        self.basewindow.vis_vars = self.sensor_num_value
+        if self.basewindow.state == 'COLLECTING':
+            self.basewindow.goto('visualization')
 
-    def get_settings(self):
-        config = {
-            'sensor num': self.sensor_num_value
-        }
-        return config
+        else:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Please wait for collection to start")
+            msg.setIcon(QMessageBox.Critical)
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
+
     
 
         

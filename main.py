@@ -16,11 +16,6 @@ from fittsLawSetupWindow import FittsLawSetupWindow
 from visualizationWindowSetup import VisualizationWindowSetup
 from visualizationWindow import VisualizationWindow
 
-## COMMENTS FROM RUNNING IT THROUGH FIRST TIME
-# During sgt the stop button is not visible
-# Photo should be centered over the progress bar (it just looking a little odd right now)
-# under the test tab the text needs to be cleared when indicating that the system is connected/model is trained, 
-
 
 # think of this as a greeting screen or something
 class MainWindow(PageWindow):
@@ -61,6 +56,8 @@ class Window(QtWidgets.QMainWindow):
         self.state = []
         self.device = {}
         self.model  = {}
+
+        self.vis_vars = []
         
         self.m_pages = {}
         # if we want to register a new functionality (new page), include the PageWindow here
