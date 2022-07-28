@@ -29,6 +29,12 @@ class SelectModelTrainingWindow(PageWindow):
         self.select_data_filename_label.setGeometry(QtCore.QRect(5,40,190,30))
         self.select_data_filename_label.setText("Data for Training")
 
+
+        self.select_data_filename_input = QLineEdit(self.centralwidget)
+        self.select_data_filename_input.setGeometry(QtCore.QRect(5,75,190,30))
+        self.select_data_filename_input.setText("SGT_SXX.csv")
+
+
         self.select_window_size_label = QLabel(self.centralwidget)
         self.select_window_size_label.setGeometry(QtCore.QRect(5,110,190,30))
         self.select_window_size_label.setText("Window Size (ms)")
