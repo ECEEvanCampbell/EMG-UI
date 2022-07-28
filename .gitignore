@@ -3,3 +3,4 @@ Results/*
 *.pyc
 *.csv
 *.pkl
+deprecated/*
