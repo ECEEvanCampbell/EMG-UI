@@ -8,7 +8,10 @@ from utils import PageWindow
 from connectionWindow import ConnectionWindow
 from screenGuidedTrainingSetupWindow import ScreenGuidedTrainingSetupWindow
 from screenGuidedTrainingWindow import ScreenGuidedTrainingWindow
-from modelTrainingWindow import ModelTrainingWindow
+#from modelTrainingWindow import ModelTrainingWindow
+from modelManualTrainingWindow import ManualModelTrainingWindow
+from modelSelectTrainingWindow import SelectModelTrainingWindow
+from modelManageWindow import ManageModelTrainingWindow
 from fittsLawSetupWindow import FittsLawSetupWindow
 from visualizationWindowSetup import VisualizationWindowSetup
 from visualizationWindow import VisualizationWindow
@@ -64,7 +67,9 @@ class Window(QtWidgets.QMainWindow):
         self.register(ConnectionWindow(self), "connect")
         self.register(ScreenGuidedTrainingSetupWindow(self), "screenguidedtrainingsetup")
         self.register(ScreenGuidedTrainingWindow(self), "screenguidedtraining")
-        self.register(ModelTrainingWindow(self), "modeltraining")
+        self.register(ManualModelTrainingWindow(self), "manualmodeltraining")
+        self.register(SelectModelTrainingWindow(self), "selectmodeltraining")
+        self.register(ManageModelTrainingWindow(self), "managemodeltraining")
         self.register(FittsLawSetupWindow(self), "fittslawsetup")
         self.register(VisualizationWindowSetup(self), "visualizationsetup")
         self.register(VisualizationWindow(self), "visualization")
@@ -93,9 +98,18 @@ class Window(QtWidgets.QMainWindow):
         collect_action2.triggered.connect(lambda: self.goto("visualizationsetup"))
 
         trainmenu = menubar.addMenu("Train")
-        train_action = trainmenu.addAction("Prepare ML Model")
-        train_action.setStatusTip("Prepare a pipeline for EMG gesture recognition using collected data.")
-        train_action.triggered.connect(lambda: self.goto("modeltraining"))
+        
+        manual_train_action = trainmenu.addAction("Manual ML Model")
+        manual_train_action.setStatusTip("Prepare a pipeline for EMG gesture recognition using collected data.")
+        manual_train_action.triggered.connect(lambda: self.goto("manualmodeltraining"))
+        
+        select_train_action = trainmenu.addAction("Selection Based ML Model")
+        select_train_action.setStatusTip("Determine best features for model from collected data.")
+        select_train_action.triggered.connect(lambda: self.goto("selectmodeltraining"))
+
+        manage_train_action = trainmenu.addAction("Manage ML Model")
+        manage_train_action.setStatusTip("Load/Save Models.")
+        manage_train_action.triggered.connect(lambda: self.goto("managemodeltraining"))
 
         testmenu = menubar.addMenu("Test")
         test_action = testmenu.addAction("Fitts Law Test")
