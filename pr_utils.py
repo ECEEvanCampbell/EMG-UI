@@ -8,7 +8,8 @@ import os
 import pickle
 
 class SGT_Dataset:
-    def __init__(self, window_size=250, window_inc=100):
+    def __init__(self, window_size=250, window_inc=100, frequency=1259):
+        self.frequency = frequency
         self.window_size = window_size
         self.window_inc = window_inc
         self.dataset = {}
@@ -28,10 +29,12 @@ class SGT_Dataset:
         self.active_channels = raw_data.sum(axis=0) != 0
         raw_data = raw_data[:,self.active_channels]
 
+        win_size_s = self.window_size/self.frequency
+        win_inc_s  = self.window_inc/ self.frequency
         # windowing
-        num_windows = (raw_data.shape[0] - self.window_size) // self.window_inc
+        num_windows = (raw_data.shape[0] - win_size_s) // win_inc_s
         st_idx = 0
-        ed_idx = self.window_size
+        ed_idx = win_size_s
         data = []
         classes  = []
         reps     = []
@@ -43,8 +46,8 @@ class SGT_Dataset:
                 reps.append(rep_mode[0])
                 data.append(raw_data[st_idx:ed_idx, :].transpose())
             
-            st_idx += self.window_inc
-            ed_idx += self.window_inc
+            st_idx += win_inc_s
+            ed_idx += win_inc_s
 
         self.dataset['data'] = np.array(data)
         self.dataset['rep']  = np.array(reps, dtype=np.int32)
@@ -55,13 +58,16 @@ class SGT_Dataset:
 
 
 class EMGClassifier:
-    def __init__(self, model_type=None, arguments=None, data_file=None):
+    def __init__(self, model_type=None, arguments=None, data_file=None, window_params = [250, 50, 1259]):
         if data_file:
             self.arguments = arguments
             # final column = rep
             # second last column = class
             #   class of 100 = rest
-            dataset = SGT_Dataset()
+            self.window_size = window_params[0]
+            self.window_increment = window_params[1]
+            self.frequency = window_params[2]
+            dataset = SGT_Dataset(window_size=self.window_size, window_inc = self.window_increment, frequency = self.frequency)
             dataset.import_data(data_file)
             self.active_channels = dataset.active_channels
             self.feature_extractor = Feature_Extractor(num_channels = self.active_channels.shape[0])
@@ -124,7 +130,8 @@ class EMGClassifier:
         classifier_dictionary = {
             'active_channels': self.active_channels,
             'feature_list': self.feature_list,
-            'classifier': self.classifier}
+            'classifier': self.classifier,
+            'window_params': [self.window_size, self.window_increment, self.frequency]}
         with open(filename, 'wb') as f:
             pickle.dump(classifier_dictionary, f)
 
@@ -136,11 +143,13 @@ class EMGClassifier:
         self.feature_extractor = Feature_Extractor(num_channels = self.active_channels.shape[0])
         self.feature_list = classifier_dictionary['feature_list']
         self.classifier = classifier_dictionary['classifier']
+        self.window_size = classifier_dictionary['window_params'][0]
+        self.window_inc  = classifier_dictionary['window_params'][1]
+        self.frequency   = classifier_dictionary['window_params'][2]
 
 
 
-
-# Theoretically, this has a method for the evaluation of 33 metrics 
+# This will have methods for the evaluation of 33 metrics... eventually 
 #------|-----------------------------------------------------------
 # RI   | Repeatability index
 # mwRI | Mean Within-Repetition Repeatability Index
