@@ -55,6 +55,7 @@ class Window(QtWidgets.QMainWindow):
         self.text_font  = QtGui.QFont()
         self.text_font.setPointSize(11)
         
+        self.state = []
         self.device = {}
         self.model  = {}
         
