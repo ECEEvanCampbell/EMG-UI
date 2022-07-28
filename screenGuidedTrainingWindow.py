@@ -88,7 +88,9 @@ class ScreenGuidedTrainingWindow(PageWindow):
         
     def onRender(self):
         if  ("name" in self.basewindow.device):
+            self.basewindow.state.append['COLLECTING']
             self.collect()
+            self.basewindow.state.remove('COLLECTING')
 
     def initUI(self):
         self.setWindowTitle("Screen Guided Training")
