@@ -1,6 +1,6 @@
 from utils import PageWindow
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QComboBox, QMessageBox, QLabel, QLineEdit
+from PyQt5.QtWidgets import QComboBox, QMessageBox, QLabel, QLineEdit, QCheckBox
 from pr_utils import EMGClassifier
 import os
 
@@ -64,6 +64,25 @@ class SelectModelTrainingWindow(PageWindow):
         self.select_model_metric_box.setGeometry(QtCore.QRect(5, 320, 190,30))
         self.select_model_metric_box.addItems(["accuracy","activeaccuracy", "MSA", "FE"])
 
+
+        self.select_active_threshold_label = QLabel(self.centralwidget)
+        self.select_active_threshold_label.setGeometry(QtCore.QRect(5,390, 165,30))
+        self.select_active_threshold_label.setText("Active Threhsold")
+
+        self.select_active_threshold_toggle = QCheckBox(self.centralwidget)
+        self.select_active_threshold_toggle.setGeometry(QtCore.QRect(160, 390, 30,30))
+
+
+        self.select_rejection_label = QLabel(self.centralwidget)
+        self.select_rejection_label.setGeometry(QtCore.QRect(5, 415, 190, 30))
+        self.select_rejection_label.setText("Rejection Threshold")
+
+        self.select_rejection_threshold = QLineEdit(self.centralwidget)
+        self.select_rejection_threshold.setGeometry(QtCore.QRect(5,450, 190, 30))
+        self.select_rejection_threshold.setText("No")
+
+
+
         self.select_button = QtWidgets.QPushButton(self.centralwidget)
         self.select_button.setGeometry(QtCore.QRect(5,355, 190, 30))
         self.select_button.setText("Make Model")
@@ -77,10 +96,19 @@ class SelectModelTrainingWindow(PageWindow):
         window_increment = self.select_window_inc_input.text()
         frequency = 1259 # TODO: dont't just hardcode this for delsys
 
+        active_threshold = self.select_active_threshold_toggle.isChecked()
+        rejection_threshold = self.select_rejection_threshold.text()
+        if rejection_threshold == "No":
+            rejection_threshold = False
+        elif rejection_threshold == "ROC": # choose best threshold
+            rejection_threshold = True
+        else:
+            rejection_threshold = float(rejection_threshold) # use specific threshold
+
         window_parameters = [window_size, window_increment, frequency]
         selection_metric = self.select_model_metric_box.currentText()
         data_filename = self.select_data_filename_input.text()
-        self.basewindow.model = EMGClassifier("selection", [selection_metric], data_filename, window_parameters)
+        self.basewindow.model = EMGClassifier("selection", [selection_metric], data_filename, window_parameters, active_threshold, rejection_threshold)
 
         msg = QMessageBox()
         msg.setWindowTitle("Classifier Trained")
