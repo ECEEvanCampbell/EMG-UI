@@ -1,4 +1,5 @@
 from cmath import nan
+from msilib.schema import Feature
 import numpy as np
 from scipy.stats import skew, kurtosis
 import sampen
@@ -29,8 +30,8 @@ class SGT_Dataset:
         self.active_channels = raw_data.sum(axis=0) != 0
         raw_data = raw_data[:,self.active_channels]
 
-        win_size_s = self.window_size/self.frequency
-        win_inc_s  = self.window_inc/ self.frequency
+        win_size_s = int(self.window_size*self.frequency/1000)
+        win_inc_s  = int(self.window_inc *self.frequency/1000)
         # windowing
         num_windows = (raw_data.shape[0] - win_size_s) // win_inc_s
         st_idx = 0
@@ -52,13 +53,29 @@ class SGT_Dataset:
         self.dataset['data'] = np.array(data)
         self.dataset['rep']  = np.array(reps, dtype=np.int32)
         self.dataset['class']= np.array(classes, dtype=np.int32)
+    
+    def active_threshold(self):
+        nm_windows = self.dataset['class']==0
+        # get mav
+        feature_extractor = Feature_Extractor(num_channels = self.active_channels.shape[0])
+        feature_list = ['MAV']
+        mav = feature_extractor.extract(feature_list, self.dataset['data'])['MAV']
+        # mean and std across channels
+        channel_mean = np.mean(mav, axis=1)
+        nm_channel_mean = channel_mean[nm_windows]
+        nm_mean_MAV = np.mean(nm_channel_mean)
+        nm_std_MAV  = np.std(nm_channel_mean)
+        # check that windows are not outside 3std from mean if active class
+        thresholded_windows = channel_mean < nm_mean_MAV + 3*nm_std_MAV
+        self.dataset['class'][thresholded_windows] = 0
+
 
 
 
 
 
 class EMGClassifier:
-    def __init__(self, model_type=None, arguments=None, data_file=None, window_params = [250, 50, 1259]):
+    def __init__(self, model_type=None, arguments=None, data_file=None, window_params = [250, 50, 1259], active_threshold=False, rejection_threshold=False):
         if data_file:
             self.arguments = arguments
             # final column = rep
@@ -69,6 +86,8 @@ class EMGClassifier:
             self.frequency = window_params[2]
             dataset = SGT_Dataset(window_size=self.window_size, window_inc = self.window_increment, frequency = self.frequency)
             dataset.import_data(data_file)
+            if active_threshold:
+                dataset.active_threshold()
             self.active_channels = dataset.active_channels
             self.feature_extractor = Feature_Extractor(num_channels = self.active_channels.shape[0])
 
@@ -114,6 +133,76 @@ class EMGClassifier:
             features = self.feature_extractor.extract_for_classifier(self.feature_list, dataset.dataset['data'])
             self.classifier.fit(features, dataset.dataset['class'])
 
+        if rejection_threshold:
+            self.setup_rejection(rejection_threshold, features, dataset.dataset['class'])
+    
+    def setup_rejection(self, rejection_threshold, features, class_labels):
+        if isinstance(rejection_threshold, bool):
+            if rejection_threshold:
+                # do ROC
+                rejection_search = 1-np.logspace(-2,0, 20)
+                # not all of these are used for selection, but it is nice seeing the values w/ breakpoints
+                active_error     = np.zeros_like(rejection_search)
+                rejection_rate   = np.zeros_like(rejection_search)
+                false_rejections = np.zeros_like(rejection_rate)
+                accuracy         = np.zeros_like(rejection_search)
+                criterion = np.zeros_like(rejection_search)
+                #using the same dataset the classifier was trained for... get probabilities for all samples
+                probabilties = self.classifier.predict_proba(features)
+                predictions = np.argmax(probabilties, axis=1)
+                active_predictions_pre_rejection = predictions != 0
+                max_proba    = np.max(probabilties,axis=1)
+
+                for t in range(rejection_search.shape[0]):
+                    rejections = max_proba < rejection_search[t]
+                    threshold_predictions = predictions.copy()
+                    threshold_predictions[rejections] = 0
+
+                    nm_predictions = threshold_predictions == 0
+                    active_predictions_post_rejection = threshold_predictions != 0
+                    # TODO: refactor these metrics into functions
+
+                    # accuracy - post rejection, what is accuracy (we don't consider a rejection to be an error)
+                    if sum(np.invert(rejections)) == 0:
+                        accuracy[t] = 0 # when everything is rejected, it is not viable
+                    else:
+                        accuracy[t] = sum(threshold_predictions[np.invert(rejections)] == class_labels[np.invert(rejections)]) / class_labels[np.invert(rejections)].shape[0]
+
+                    # active error - when should you have rejected but did not.
+                    # sum of all the misclassifications that are not predicting no motion
+                    # if sum(active_predictions_post_rejection) == 0:
+                    #     active_error[t] = 1 # worst case, every active sample has been rejected
+                    # else:
+                    #     misclassifications = class_labels != threshold_predictions
+                    #     active_misclassifications = (misclassifications.astype(int) + active_predictions_post_rejection.astype(int)) == 2
+                    #     active_error[t] = sum(active_misclassifications) / sum(active_predictions_post_rejection)
+                    
+                    # false rejections - when you rejected but should not have
+                    # sum of when it rejects but would have been correct
+                    # active_rejections = (rejections.astype(int)+active_predictions_pre_rejection.astype(int)) == 2
+                    # if sum(active_rejections) == 0:
+                    #     false_rejections[t] = 0 # ideal case for this metric, no rejections of active class
+                    # else:
+                    #     false_rejections[t]  = sum(predictions[active_rejections] == class_labels[active_rejections])/sum(active_rejections)
+                    
+                    # we want a minimum rate of rejection
+                    rejection_rate[t] = sum(rejections)/class_labels.shape[0]
+
+
+                    # the optimum for this is at coordinates [0, 1]: no misclassifications to nm, perfect accuracy
+                    criterion[t] = (rejection_rate[t])**2 + (accuracy[t]-1)**2
+
+                    
+                self.rejection = True
+                self.rejection_threshold = rejection_search[np.argmin(criterion)]
+            else:
+                self.rejection = False
+                self.rejection_threshold = np.nan
+        elif isinstance(rejection_threshold, float):
+            # if a float is given here instead
+            self.rejection = True
+            self.rejection_threshold = rejection_threshold
+
     def run(self, window, maskon=False):
         if maskon:
             # Make sure it goes channel, samples in pygame also
@@ -124,6 +213,11 @@ class EMGClassifier:
             # often we will have only a single observation in the form (channels, smaples), so we can add a trivial dimension at the start in this case.
         features = self.feature_extractor.extract_for_classifier(self.feature_list, window)
         probabilities = self.classifier.predict_proba(features)
+        if self.rejection:
+            for w in range(probabilities.shape[0]):
+                if np.max(probabilities[w,1:]) < self.rejection_threshold:
+                    probabilities[w,0] = 1
+                    probabilities[w,1:] = 0
         return probabilities
 
     def save(self, filename):
@@ -131,7 +225,8 @@ class EMGClassifier:
             'active_channels': self.active_channels,
             'feature_list': self.feature_list,
             'classifier': self.classifier,
-            'window_params': [self.window_size, self.window_increment, self.frequency]}
+            'window_params': [self.window_size, self.window_increment, self.frequency],
+            'rejection_params': [self.rejection, self.rejection_threshold]}
         with open(filename, 'wb') as f:
             pickle.dump(classifier_dictionary, f)
 
@@ -146,6 +241,8 @@ class EMGClassifier:
         self.window_size = classifier_dictionary['window_params'][0]
         self.window_inc  = classifier_dictionary['window_params'][1]
         self.frequency   = classifier_dictionary['window_params'][2]
+        self.rejection   = classifier_dictionary['rejection_params'][0]
+        self.rejection_threshold = classifier_dictionary['rejection_params'][1]
 
 
 
