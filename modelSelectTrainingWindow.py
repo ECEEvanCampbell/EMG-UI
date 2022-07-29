@@ -66,25 +66,25 @@ class SelectModelTrainingWindow(PageWindow):
 
 
         self.select_active_threshold_label = QLabel(self.centralwidget)
-        self.select_active_threshold_label.setGeometry(QtCore.QRect(5,390, 165,30))
+        self.select_active_threshold_label.setGeometry(QtCore.QRect(5,355, 165,30))
         self.select_active_threshold_label.setText("Active Threhsold")
 
         self.select_active_threshold_toggle = QCheckBox(self.centralwidget)
-        self.select_active_threshold_toggle.setGeometry(QtCore.QRect(160, 390, 30,30))
+        self.select_active_threshold_toggle.setGeometry(QtCore.QRect(160, 355, 30,30))
 
 
         self.select_rejection_label = QLabel(self.centralwidget)
-        self.select_rejection_label.setGeometry(QtCore.QRect(5, 415, 190, 30))
+        self.select_rejection_label.setGeometry(QtCore.QRect(5, 390, 190, 30))
         self.select_rejection_label.setText("Rejection Threshold")
 
         self.select_rejection_threshold = QLineEdit(self.centralwidget)
-        self.select_rejection_threshold.setGeometry(QtCore.QRect(5,450, 190, 30))
+        self.select_rejection_threshold.setGeometry(QtCore.QRect(5,425, 190, 30))
         self.select_rejection_threshold.setText("No")
 
 
 
         self.select_button = QtWidgets.QPushButton(self.centralwidget)
-        self.select_button.setGeometry(QtCore.QRect(5,355, 190, 30))
+        self.select_button.setGeometry(QtCore.QRect(5,460, 190, 30))
         self.select_button.setText("Make Model")
         self.select_button.clicked.connect(self.make_automatic_model)
 
