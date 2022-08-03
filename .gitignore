@@ -4,3 +4,4 @@ Results/*
 *.csv
 *.pkl
 deprecated/*
+Delsys Hardware Information.json
