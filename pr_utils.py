@@ -118,11 +118,17 @@ class EMGClassifier:
             # ETC. 
 
             feature_selector = Feature_Selector(arguments, len(self.feature_extractor.get_feature_list()))
-            prepared_dataset = self.feature_extractor.extract(self.feature_extractor.get_feature_list(), dataset.dataset['data'])
-            prepared_dataset['class'] = dataset.dataset['class']
-            prepared_dataset['rep'] = dataset.dataset['rep']
-            prepared_dataset['feature_list'] = self.feature_extractor.get_feature_list()
-            # TODO: save this prepared dataset since it will be used at least 2 times in the collection
+            if os.path.exists("tmp/"+data_file[:-4] + '.pkl'):
+                 with open("tmp/"+data_file[:-4] + '.pkl', 'rb') as f:
+                    prepared_dataset = pickle.load(f)
+            else:
+                prepared_dataset = self.feature_extractor.extract(self.feature_extractor.get_feature_list(), dataset.dataset['data'])
+                prepared_dataset['class'] = dataset.dataset['class']
+                prepared_dataset['rep'] = dataset.dataset['rep']
+                prepared_dataset['feature_list'] = self.feature_extractor.get_feature_list()
+                with open("tmp/"+data_file[:-4] + '.pkl', 'wb') as f:
+                    pickle.dump(prepared_dataset, f)
+
 
             # determine optimal feature set according to criterion
             feature_selector.run_selection(prepared_dataset)
