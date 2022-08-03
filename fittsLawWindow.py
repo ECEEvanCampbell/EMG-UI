@@ -97,7 +97,7 @@ class FittsLawTest:
         ## Save or don't save
         self.LOGGING = True
         self.trial = 0
-        self.max_trial = 5#60
+        self.max_trial = self.game.num_trials
 
     
 
@@ -255,7 +255,7 @@ class FittsLawTest:
     def save_log(self):
         if not os.path.exists('results'):
             os.mkdir('results')
-        with open('results/fitts_law_interaction.pkl', 'wb') as f:
+        with open('results/'+self.game.savefile, 'wb') as f:
             pickle.dump(self.log_dictionary, f)
 
     def closeEvent(self, event):
@@ -271,13 +271,15 @@ class FittsLawTest:
 
 class Game:
     # just for interfacing with pygame
-    def __init__(self, num_circles, device, model, class_mappings, fps=60, width=1250, height=750):
+    def __init__(self, num_circles, device, model, class_mappings, num_trials=15, savefile="tmp.pkl", fps=60, width=1250, height=750):
         pygame.init()
 
         self.num_circles = num_circles
         self.device = device
         self.model = model
         self.class_mappings = class_mappings
+        self.savefile = savefile
+        self.num_trials = num_trials
 
         self.fps = fps
         self.width = width

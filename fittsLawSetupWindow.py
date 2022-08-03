@@ -66,7 +66,24 @@ class FittsLawSetupWindow(PageWindow):
 
         # TODO: add more settings like speed, maybe controller type, etc.
 
-        # TODO: add filename for trajectory info
+
+        self.num_trials_label = QtWidgets.QLabel(self.centralwidget)
+        self.num_trials_label.setGeometry(QtCore.QRect(800, 95, 300, 30))
+        self.num_trials_label.setText("Number of Trials")
+
+        self.num_trials_input = QtWidgets.QLineEdit(self.centralwidget)
+        self.num_trials_input.setGeometry(QtCore.QRect(800, 140, 300, 30))
+        self.num_trials_input.setText("15")
+
+        self.savefile_label = QtWidgets.QLabel(self.centralwidget)
+        self.savefile_label.setGeometry(QtCore.QRect(800,185, 300, 30))
+        self.savefile_label.setText("Save filename")
+
+        self.savefile_input = QtWidgets.QLineEdit(self.centralwidget)
+        self.savefile_input.setGeometry(QtCore.QRect(800, 230, 300, 30))
+        self.savefile_input.setText("FLT_SXXX_MXXX_TXXX.pkl")
+
+
         # add begin button
         self.begin_button = QtWidgets.QPushButton(self.centralwidget)
         self.begin_button.setGeometry(QtCore.QRect(800, 500, 100, 30))
@@ -93,11 +110,13 @@ class FittsLawSetupWindow(PageWindow):
             class_mappings[self.class_labels[i][0].text()] = self.class_labels[i][1].currentText()
 
         num_circles = int(self.num_circle_input.text())
+        num_trials  = int(self.num_trials_input.text())
+        savefile    = self.savefile_input.text()
 
         device = self.basewindow.device
         model = self.basewindow.model
 
-        game = Game( num_circles, device, model, class_mappings)
+        game = Game( num_circles, device, model, class_mappings, num_trials, savefile)
         game.run()
         
 
