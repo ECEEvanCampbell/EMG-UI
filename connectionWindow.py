@@ -39,6 +39,7 @@ class ConnectionWindow(PageWindow):
         ## filename area
         self.filename_input = QLineEdit("",self.centralwidget)
         self.filename_input.setGeometry(QtCore.QRect(20, 60, 200, 40))
+        self.filename_input.setText("SGT_Sxxx")
 
         ## Windowsize Label
         self.buffer_duration_label = QLabel(self.centralwidget)
@@ -46,7 +47,7 @@ class ConnectionWindow(PageWindow):
         self.buffer_duration_label.setFont(self.subtitle_font)
         self.buffer_duration_label.setGeometry(QtCore.QRect(20, 110, 200, 40))
         ## Windowsize area
-        self.buffer_duration_input = QLineEdit(".250",self.centralwidget)
+        self.buffer_duration_input = QLineEdit(".150",self.centralwidget)
         self.buffer_duration_input.setGeometry(QtCore.QRect(20, 160, 200, 40))
 
 
@@ -87,7 +88,6 @@ class ConnectionWindow(PageWindow):
             if self.sensor == "Delsys":
                 #do delsys stuff
                 filename = self.filename_input.text()
-                # TODO: add check to see if file exists (if exists throw error and prompt user for new name.)
                 self.basewindow.device['reader'] = DelsysTrignoReader(file_exist_ok=True, emg_file_name=filename+'_EMG.csv', aux_file_name=filename+'_AUX.csv')
                 self.basewindow.device['reader'].register_custom_columns(num_columns=2)
                 rnd_number = np.random.randint(1e6)
@@ -97,6 +97,8 @@ class ConnectionWindow(PageWindow):
             elif self.sensor == "SiFi":
                 # do SiFi stuff
                 self.basewindow.device['name'] = 'SiFi'
+                pass
+            else:
                 pass
 
             msg = QMessageBox()
@@ -115,7 +117,6 @@ class ConnectionWindow(PageWindow):
             msg.setIcon(QMessageBox.Critical)
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec_() # shows the message box
-
             self.basewindow.device = {}
 
     def disconnect_pressed(self):
