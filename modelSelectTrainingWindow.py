@@ -51,11 +51,6 @@ class SelectModelTrainingWindow(PageWindow):
         self.select_window_inc_input.setGeometry(QtCore.QRect(5,215,190,30))
         self.select_window_inc_input.setText("0.050")
 
-
-        self.select_data_filename_input = QLineEdit(self.centralwidget)
-        self.select_data_filename_input.setGeometry(QtCore.QRect(5,250,190,30))
-        self.select_data_filename_input.setText("SGT_SXX.csv")
-
         self.select_model_metric_label = QLabel(self.centralwidget)
         self.select_model_metric_label.setGeometry(QtCore.QRect(5, 285, 190,30))
         self.select_model_metric_label.setText("Selection Metric")
@@ -67,7 +62,7 @@ class SelectModelTrainingWindow(PageWindow):
 
         self.select_active_threshold_label = QLabel(self.centralwidget)
         self.select_active_threshold_label.setGeometry(QtCore.QRect(5,355, 165,30))
-        self.select_active_threshold_label.setText("Active Threhsold")
+        self.select_active_threshold_label.setText("Active Threshold")
 
         self.select_active_threshold_toggle = QCheckBox(self.centralwidget)
         self.select_active_threshold_toggle.setGeometry(QtCore.QRect(160, 355, 30,30))
@@ -92,8 +87,8 @@ class SelectModelTrainingWindow(PageWindow):
        
 
     def make_automatic_model(self):
-        window_size = self.select_window_size_label.text()
-        window_increment = self.select_window_inc_input.text()
+        window_size = float(self.select_window_size_input.text())*1000
+        window_increment = float(self.select_window_inc_input.text())*1000
         frequency = 1259 # TODO: dont't just hardcode this for delsys
 
         active_threshold = self.select_active_threshold_toggle.isChecked()
