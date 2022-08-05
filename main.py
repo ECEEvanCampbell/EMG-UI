@@ -15,6 +15,7 @@ from modelManageWindow import ManageModelTrainingWindow
 from fittsLawSetupWindow import FittsLawSetupWindow
 #from visualizationWindowSetup import VisualizationWindowSetup
 from visualizationWindow import VisualizationWindow
+from livePlotWindow import visWindow
 
 
 # think of this as a greeting screen or something
@@ -67,7 +68,8 @@ class Window(QtWidgets.QMainWindow):
         self.register(ManageModelTrainingWindow(self), "managemodeltraining")
         self.register(FittsLawSetupWindow(self), "fittslawsetup")
         #self.register(VisualizationWindowSetup(self), "visualizationsetup")
-        self.register(VisualizationWindow(self), "visualization")
+        #self.register(VisualizationWindow(self), "visualization")
+        self.register(visWindow(self), "visualization")
         
         self.register(MainWindow(self), "main")
         
@@ -90,7 +92,8 @@ class Window(QtWidgets.QMainWindow):
         collect_action.triggered.connect(lambda: self.goto("screenguidedtrainingsetup"))
         collect_action2 = collectmenu.addAction("Visualize")
         collect_action2.setStatusTip("View signals while collecting data")
-        self.vis_window = VisualizationWindow(self)
+        #self.vis_window = visWindow(self)
+        #collect_action2.triggered.connect(lambda: #self.vis_window.setupUi())
         collect_action2.triggered.connect(lambda: self.goto("visualization"))
 
         trainmenu = menubar.addMenu("Train")
