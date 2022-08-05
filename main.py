@@ -56,8 +56,6 @@ class Window(QtWidgets.QMainWindow):
         self.state = []
         self.device = {}
         self.model  = {}
-
-        self.vis_vars = []
         
         self.m_pages = {}
         # if we want to register a new functionality (new page), include the PageWindow here
@@ -69,7 +67,7 @@ class Window(QtWidgets.QMainWindow):
         self.register(ManageModelTrainingWindow(self), "managemodeltraining")
         self.register(FittsLawSetupWindow(self), "fittslawsetup")
         #self.register(VisualizationWindowSetup(self), "visualizationsetup")
-        #self.register(VisualizationWindow(self), "visualization")
+        self.register(VisualizationWindow(self), "visualization")
         
         self.register(MainWindow(self), "main")
         
@@ -93,7 +91,7 @@ class Window(QtWidgets.QMainWindow):
         collect_action2 = collectmenu.addAction("Visualize")
         collect_action2.setStatusTip("View signals while collecting data")
         self.vis_window = VisualizationWindow(self)
-        collect_action2.triggered.connect(lambda: self.vis_window.display())
+        collect_action2.triggered.connect(lambda: self.goto("visualization"))
 
         trainmenu = menubar.addMenu("Train")
         

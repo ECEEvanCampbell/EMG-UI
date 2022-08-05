@@ -107,6 +107,7 @@ class ConnectionWindow(PageWindow):
             msg.setIcon(QMessageBox.Information)
             msg.setStandardButtons(QMessageBox.Ok)
             x = msg.exec_() # shows the message box
+            self.basewindow.state.append('CONNECTED')
             self.basewindow.goto("main")
 
         
@@ -127,6 +128,7 @@ class ConnectionWindow(PageWindow):
                     self.basewindow.device['reader'].join()
                     self.basewindow.device['emg_buf'].close()
                     self.basewindow.device['aux_buf'].close()
+                    self.basewindow.state.remove('CONNECTED')
             elif self.sensor == "SiFi":
                 pass
         except:
