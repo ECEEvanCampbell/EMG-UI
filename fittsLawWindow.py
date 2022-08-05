@@ -46,9 +46,9 @@ class DataWorker(QObject):
                 elif class_direction == "Right":
                     direction[0] += self.fl.VEL*prob[c]
                 elif class_direction == "Up":
-                    direction[1] +=  self.fl.VEL *prob[c]
+                    direction[1] += -1* self.fl.VEL *prob[c]
                 elif class_direction == "Down":
-                    direction[1] += -1 * self.fl.VEL * prob[c]
+                    direction[1] +=  self.fl.VEL * prob[c]
                 # there is also a no movement case (NM)
             self.fl.current_direction = direction
             # classifier stuff goes here
@@ -244,6 +244,7 @@ class FittsLawTest:
                 'current_prob':      [],
                 'current_direction': []
             }
+        # add time since start
         self.log_dictionary['trial_number'].append(self.trial)
         self.log_dictionary['goal_circle'].append(self.goal_circle)
         self.log_dictionary['global_clock'].append(time.perf_counter())

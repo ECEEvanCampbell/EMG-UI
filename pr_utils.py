@@ -40,13 +40,16 @@ class SGT_Dataset:
         classes  = []
         reps     = []
         for w in range(num_windows):
-            class_mode, _ = np.unique(gesture[st_idx:ed_idx], return_counts=True)
-            rep_mode, _   = np.unique(rep[st_idx:ed_idx], return_counts=True)
-            if class_mode[0] != 1000:
-                classes.append(class_mode[0])
-                reps.append(rep_mode[0])
-                data.append(raw_data[st_idx:ed_idx, :].transpose())
-            
+            # DELSYS STARTS RECORDING BEFORE TRANSMITTING -- ALL ZEROS LEADS TO FEATURE EXTRACTION ERRORS.
+            if not (raw_data[st_idx:ed_idx,:] == 0).all():
+                class_mode, _ = np.unique(gesture[st_idx:ed_idx], return_counts=True)
+                rep_mode, _   = np.unique(rep[st_idx:ed_idx], return_counts=True)
+                if class_mode[0] != 1000:
+                    
+                    classes.append(class_mode[0])
+                    reps.append(rep_mode[0])
+                    data.append(raw_data[st_idx:ed_idx, :].transpose())
+                
             st_idx += win_inc_s
             ed_idx += win_inc_s
 
@@ -66,7 +69,7 @@ class SGT_Dataset:
         nm_mean_MAV = np.mean(nm_channel_mean)
         nm_std_MAV  = np.std(nm_channel_mean)
         # check that windows are not outside 3std from mean if active class
-        thresholded_windows = channel_mean < nm_mean_MAV + 3*nm_std_MAV
+        thresholded_windows = channel_mean < (nm_mean_MAV + 3*nm_std_MAV)
         self.dataset['class'][thresholded_windows] = 0
 
 
@@ -111,13 +114,8 @@ class EMGClassifier:
                 # TODO: add common classifiers here
 
         elif model_type == "selection":
-            if arguments[0] == "accuracy": # This matches the combofield
-                arguments.append("argmax") # this is the "good"/goal side of the spectrum for the metric
-            elif arguments[0] == "activeaccuracy":
-                arguments.append("argmax")
-            # ETC. 
 
-            feature_selector = Feature_Selector(arguments, len(self.feature_extractor.get_feature_list()))
+            # get features for selection
             if os.path.exists("tmp/"+data_file[:-4] + '.pkl'):
                  with open("tmp/"+data_file[:-4] + '.pkl', 'rb') as f:
                     prepared_dataset = pickle.load(f)
@@ -129,18 +127,32 @@ class EMGClassifier:
                 with open("tmp/"+data_file[:-4] + '.pkl', 'wb') as f:
                     pickle.dump(prepared_dataset, f)
 
+            # setup selection metric
+            if arguments[0] == "accuracy": # This matches the combofield
+                arguments.append("argmax") # this is the "good"/goal side of the spectrum for the metric
+            elif arguments[0] == "activeaccuracy":
+                arguments.append("argmax")
+            elif arguments[0] == "msa":
+                arguments.append("argmax")
+            elif arguments[0] == "fe":
+                arguments.append("argmax")
 
-            # determine optimal feature set according to criterion
+
+            # intiialize selector
+            feature_selector = Feature_Selector(arguments, len(self.feature_extractor.get_feature_list()))
+            
+
+            # determine feature order according to criterion
             feature_selector.run_selection(prepared_dataset)
             feature_selector.print_results()
 
-            self.feature_list = feature_selector.get_feature_set()
+            # determine feature set from order.
+            self.feature_list = feature_selector.get_feature_set(num=5)
             self.classifier   = LinearDiscriminantAnalysis()
             features = self.feature_extractor.extract_for_classifier(self.feature_list, dataset.dataset['data'])
             self.classifier.fit(features, dataset.dataset['class'])
-
-        if rejection_threshold:
-            self.setup_rejection(rejection_threshold, features, dataset.dataset['class'])
+            
+        self.setup_rejection(rejection_threshold, features=features, class_labels=dataset.dataset['class'])
     
     def setup_rejection(self, rejection_threshold, features, class_labels):
         if isinstance(rejection_threshold, bool):
@@ -292,9 +304,9 @@ class EMGClassifier:
 # CA   | Classification Accuracy
 # ACA  | Active Classification Accuracy
 # MSA  | Mean Semi-Principal Axes
+# FE   | Feature Efficiency
 
 # To Implement:
-# FE   | Feature Efficiency
 # PU   | Purity
 # MAV  | Mean Absolute Value
 # RI   | Repeatability index
@@ -310,12 +322,10 @@ class Feature_Selector:
         self.feature_order = [] # This is the feature order by selection
         self.feature_order_id = [] # This is purely used in the display function -- 
     
-    def get_feature_set(self, tol=0.5):
+    def get_feature_set(self, tol=None, num=None):
         # if there is not tol %dif in iteration, continue to add features, else stop
         feature_set = []
-        change = np.inf
-        last_crit = np.inf
-        feature_id = 0
+        
 
         if self.metric == 'accuracy':
             metric = self.mean_accuracy
@@ -325,17 +335,24 @@ class Feature_Selector:
             metric = self.mean_msa
         elif self.metric == 'fe':
             metric = self.mean_fe
-
-        while np.abs(100*change) > tol:
-            # add feature to list
-            feature_set.append(self.feature_order[feature_id])
-            
-            # get criterion for best feature
-            cur_crit = metric[feature_id][self.feature_order_id[feature_id]]
-            # check to see that it improves criterion by 1/2 percent
-            change = (cur_crit - last_crit)/(cur_crit)
-            last_crit = cur_crit
-            feature_id += 1
+        
+        # tolerence based selection
+        if tol:
+            change = tol+1e-5
+            last_crit = -np.inf
+            feature_id = 0
+            while (100*change) > tol:
+                # add feature to list
+                feature_set.append(self.feature_order[feature_id])
+                
+                # get criterion for best feature
+                cur_crit = metric[feature_id][self.feature_order_id[feature_id]]
+                # check to see that it improves criterion by 1/2 percent
+                change = (cur_crit - last_crit)/(cur_crit)
+                last_crit = cur_crit
+                feature_id += 1
+        elif num:
+            feature_set = self.feature_order[:num]
         return feature_set[:-1]
 
 
@@ -443,7 +460,7 @@ class Feature_Selector:
             self.mean_msa = {}
             self.std_msa = {}
 
-        num_subjects = len(np.unique(data["subject"]))
+        num_subjects = 1
         num_classes  = len(np.unique(data["class"]))
         class_list   =  np.unique(data["class"])
 
@@ -457,18 +474,14 @@ class Feature_Selector:
         for i,feature in enumerate(features_remaining):
             iteration_features = np.hstack([prior_features, data[feature]])  if prior_features.size else data[feature]
             msa = np.zeros((num_subjects, num_classes))
-            # do a k-fold cross-validation within subject
-            for subject in range(num_subjects):
-                subject_features = iteration_features[data["subject"] == subject,:]
-                class_labels     = data["class"][data["subject"] == subject]
-                # normalize the features to ensure that the scale is appropriate
-                subject_features = (subject_features - np.mean(subject_features,axis=0)) / np.std(subject_features, axis=0)
-                for c in range(num_classes):
-                    class_features = iteration_features[data["class"] == class_list[c], :]
-                    pca = PCA()
-                    pca.fit(class_features)
-                    for comp in pca.components_:
-                        msa[subject, c] += np.abs(comp).prod() ** (1.0 / len(comp))
+            norm_iteration_features = (iteration_features - iteration_features.mean()) / iteration_features.std()
+            for c in range(num_classes):
+                class_features = norm_iteration_features[data["class"] == class_list[c], :]
+
+                pca = PCA()
+                pca.fit(class_features)
+                for comp in pca.components_:
+                    msa[0, c] += np.abs(comp).prod() ** (1.0 / len(comp))
             msa = np.mean(msa,1)
             mean_msa[i] = np.mean(msa)
             std_msa[i]  = np.std(msa)
@@ -477,6 +490,74 @@ class Feature_Selector:
         self.std_msa[len(self.std_msa.keys())] = std_msa
 
         return mean_msa
+
+    def fe(self, data, features_included, features_remaining):
+        # FE is not actually a sequential metric...
+        # we could do it all in one go and have the complexity be N
+        # but to keep the format of the selection library, we will do it sequentially
+        # calls for a refactor later.
+
+        if not hasattr(self, "mean_fe"):
+            self.feature_list = data["feature_list"]
+            self.mean_fe = {}
+
+        num_subjects = 1
+        class_list   =  np.unique(data["class"])
+
+        # N are active channels, we don't use NM here (as described in Nawfel paper)
+        class_list = class_list[class_list != 0]
+        num_classes  = len(class_list)
+
+        mean_fe = np.zeros(len(features_remaining))
+
+        # we don't need to do anything with the features already included
+        for i,feature in enumerate(features_remaining):
+            iteration_features = data[feature]
+            # determine overlap between class j and class i
+            sum_class_efficiency = 0
+            for cj in class_list:
+                cj_ids = data["class"] == cj
+                cardinality_j = sum(cj_ids)
+                
+                for ci in class_list:
+                    max_class_efficiency = 0
+                    if ci == cj:
+                        continue
+                    else:
+                        ci_ids = data["class"] == ci
+                        cardinality_i = sum(ci_ids)
+                        # Sk is the number of included points, point is included if:
+                        max_feature_class_efficiency = 0
+                        for k in range(iteration_features.shape[1]):
+                            min_j = min(iteration_features[cj_ids,k])
+                            min_i = min(iteration_features[ci_ids,k])
+                            max_of_mins = max([min_j, min_i])
+
+                            max_j = max(iteration_features[cj_ids,k])
+                            max_i = max(iteration_features[ci_ids==False,k])
+                            min_of_maxes = min([max_j, max_i])
+
+                            included_points = (iteration_features[ci_ids+cj_ids,k] < min_of_maxes).astype(np.int32) + (iteration_features[ci_ids+cj_ids,k] > max_of_mins).astype(np.int32)
+                            Sk = sum(included_points==2)
+                            class_efficiency = (cardinality_i + cardinality_j - Sk) / (cardinality_i + cardinality_j)
+                            if class_efficiency > max_feature_class_efficiency:
+                                max_feature_class_efficiency = class_efficiency
+                    if max_feature_class_efficiency > max_class_efficiency:
+                        max_class_efficiency = max_feature_class_efficiency
+                    
+                sum_class_efficiency += max_class_efficiency
+            mean_fe[i] = sum_class_efficiency / (num_classes-1)
+        self.mean_fe[len(self.mean_fe.keys())] = mean_fe
+        return mean_fe
+                    
+
+
+
+
+
+
+
+
 
 
     def print_results(self):
@@ -533,6 +614,27 @@ class Feature_Selector:
                 row += "|" + ("{:.2f}+{:.2f}".format(mean_msa[ii],std_msa[ii])).center(longest)
             print(row)
 
+    def print_fe_results(self):
+        longest = 11
+        for f in self.feature_order:
+            if longest < len(f):
+                longest = len(f)
+        header_row = "iter".center(longest)
+        for f in range(len(self.feature_order)):
+            header_row += "|" + self.feature_order[f].center(longest)
+        print(header_row)
+        print('='*((longest+1)*(len(self.feature_order)+1)))
+
+
+        for i in range(len(self.feature_order)):
+            row = str(i).center(longest)
+            mean_fe = self.mean_fe[i][self.feature_order_id[i:]]
+
+            for j in range(i):
+                row += "|" + " ".center(longest)
+            for ii,f in enumerate(range(i, len(self.feature_order))):
+                row += "|" + ("{:.2f}".format(mean_fe[ii])).center(longest)
+            print(row)
 
 class Feature_Extractor:
     def __init__(self, num_channels):
@@ -566,7 +668,7 @@ class Feature_Extractor:
                         'MNF',
                         'MNP',
                         'MPK',
-                        #'SAMPEN',
+                        #'SAMPEN', # takes a long time, but works
                         'SKEW',
                         'KURT']
         return feature_list
