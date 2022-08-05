@@ -304,9 +304,9 @@ class EMGClassifier:
 # CA   | Classification Accuracy
 # ACA  | Active Classification Accuracy
 # MSA  | Mean Semi-Principal Axes
+# FE   | Feature Efficiency
 
 # To Implement:
-# FE   | Feature Efficiency
 # PU   | Purity
 # MAV  | Mean Absolute Value
 # RI   | Repeatability index
