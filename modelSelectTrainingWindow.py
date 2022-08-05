@@ -57,7 +57,7 @@ class SelectModelTrainingWindow(PageWindow):
 
         self.select_model_metric_box = QComboBox(self.centralwidget)
         self.select_model_metric_box.setGeometry(QtCore.QRect(5, 320, 190,30))
-        self.select_model_metric_box.addItems(["accuracy","activeaccuracy", "MSA", "FE"])
+        self.select_model_metric_box.addItems(["accuracy","activeaccuracy", "msa", "fe"])
 
 
         self.select_active_threshold_label = QLabel(self.centralwidget)
