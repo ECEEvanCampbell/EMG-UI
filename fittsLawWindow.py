@@ -8,6 +8,7 @@ import pickle
 import os
 from biomedical_hardware_readers import DelsysTrignoReader
 import datetime
+import numpy as np
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 from screenGuidedTrainingWindow import CollectionWorker
@@ -38,18 +39,34 @@ class DataWorker(QObject):
             prob = prob[-1,:]
             #direction = [xvel,yvel]
             direction = [0,0]
-            for c in range(len(prob)):
-                class_id = self.fl.game.model.classifier.classes_[c]
-                class_direction = self.fl.game.class_mappings[str(class_id)]
-                if class_direction == "Left":
-                    direction[0] += -1 * self.fl.VEL * prob[c]
-                elif class_direction == "Right":
-                    direction[0] += self.fl.VEL*prob[c]
-                elif class_direction == "Up":
-                    direction[1] += -1* self.fl.VEL *prob[c]
-                elif class_direction == "Down":
-                    direction[1] +=  self.fl.VEL * prob[c]
-                # there is also a no movement case (NM)
+
+            # code for regression type controllers
+            # for c in range(len(prob)):
+            #     class_id = self.fl.game.model.classifier.classes_[c]
+            #     class_direction = self.fl.game.class_mappings[str(class_id)]
+            #     if class_direction == "Left":
+            #         direction[0] += -1 * self.fl.VEL * prob[c]
+            #     elif class_direction == "Right":
+            #         direction[0] += self.fl.VEL*prob[c]
+            #     elif class_direction == "Up":
+            #         direction[1] += -1* self.fl.VEL *prob[c]
+            #     elif class_direction == "Down":
+            #         direction[1] +=  self.fl.VEL * prob[c]
+            #     # there is also a no movement case (NM)
+
+            # code for classification based controllers
+            decision = np.argmax(prob)
+            class_direction = self.fl.game.class_mappings[str(decision)]
+            if class_direction == "Left":
+                direction[0] += -1 * self.fl.VEL
+            elif class_direction == "Right":
+                direction[0] += self.fl.VEL
+            elif class_direction == "Up":
+                direction[1] += -1* self.fl.VEL
+            elif class_direction == "Down":
+                direction[1] +=  self.fl.VEL
+            # there is also a no movement case (NM)
+
             self.fl.current_direction = direction
             # classifier stuff goes here
             if self.fl.LOGGING:
@@ -77,7 +94,7 @@ class FittsLawTest:
         self.pos_factor1 = self.big_rad/2
         self.pos_factor2 = (self.big_rad * math.sqrt(3))//2
 
-        self.VEL = 1
+        self.VEL = 1.5
         self.dwell_time = 3
         self.num_of_circles = self.game.num_circles # this value will be a user input
 
@@ -98,6 +115,8 @@ class FittsLawTest:
         self.LOGGING = True
         self.trial = 0
         self.max_trial = self.game.num_trials
+
+        self.main_clock = time.perf_counter()
 
     
 
@@ -174,7 +193,7 @@ class FittsLawTest:
                 if self.LOGGING:
                     self.save_log()
                 pygame.quit()
-                sys.exit()
+                #sys.exit()
 
             ## CHECKING FOR COLLISION BETWEEN CURSOR AND RECTANGLES
             if event.type >= pygame.USEREVENT and event.type < pygame.USEREVENT + self.num_of_circles:
@@ -191,8 +210,13 @@ class FittsLawTest:
                     else:
                         if self.LOGGING:
                             self.save_log()
-                            pygame.quit()
-                            sys.exit()
+                        pygame.quit()
+                        #sys.exit()
+                        if self.game.device['name'] == "Delsys":
+                            self.game.device['reader'].shutdown()
+                            self.game.device['reader'].join()
+                            self.game.device['emg_buf'].close()
+                            self.game.device['aux_buf'].close()
 
 
             elif event.type == pygame.USEREVENT + self.num_of_circles:
@@ -218,15 +242,28 @@ class FittsLawTest:
     
     
     def get_new_goal_circle(self):
-        # base case: no checking for same goal circle
+        # # base case: no checking for same goal circle
+        # if self.goal_circle == -1:
+        #     self.goal_circle = random.randint(0, self.num_of_circles - 1)
+        # else:
+        #     # check for getting the same goal
+        #     new_goal_circle = random.randint(0, self.num_of_circles - 1)
+        #     while new_goal_circle == self.goal_circle:
+        #         new_goal_circle = random.randint(0, self.num_of_circles - 1)
+        #     self.goal_circle = new_goal_circle
         if self.goal_circle == -1:
-            self.goal_circle = random.randint(0, self.num_of_circles - 1)
+            self.goal_circle = 0
+            self.next_circle_in = self.num_of_circles//2
+            self.circle_jump = 0
         else:
-            # check for getting the same goal
-            new_goal_circle = random.randint(0, self.num_of_circles - 1)
-            while new_goal_circle == self.goal_circle:
-                new_goal_circle = random.randint(0, self.num_of_circles - 1)
-            self.goal_circle = new_goal_circle
+            self.goal_circle =  (self.goal_circle + self.next_circle_in )% self.num_of_circles
+            if self.circle_jump == 0:
+                self.next_circle_in = self.num_of_circles//2 + 1
+                self.circle_jump = 1
+            else:
+                self.next_circle_in = self.num_of_circles // 2
+                self.circle_jump = 0
+            
 
 
     def print_caption(self):
@@ -245,6 +282,8 @@ class FittsLawTest:
                 'current_direction': []
             }
         # add time since start
+        
+        toc = time.perf_counter()
         self.log_dictionary['trial_number'].append(self.trial)
         self.log_dictionary['goal_circle'].append(self.goal_circle)
         self.log_dictionary['global_clock'].append(time.perf_counter())
