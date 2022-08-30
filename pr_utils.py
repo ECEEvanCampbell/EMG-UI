@@ -112,6 +112,7 @@ class EMGClassifier:
             elif arguments[1] == "SVM":
                 pass
                 # TODO: add common classifiers here
+            self.setup_rejection(rejection_threshold, features=features, class_labels=dataset.dataset['class'])
 
         elif model_type == "selection":
 
@@ -152,7 +153,7 @@ class EMGClassifier:
             features = self.feature_extractor.extract_for_classifier(self.feature_list, dataset.dataset['data'])
             self.classifier.fit(features, dataset.dataset['class'])
             
-        self.setup_rejection(rejection_threshold, features=features, class_labels=dataset.dataset['class'])
+            self.setup_rejection(rejection_threshold, features=features, class_labels=dataset.dataset['class'])
     
     def setup_rejection(self, rejection_threshold, features, class_labels):
         if isinstance(rejection_threshold, bool):
