@@ -94,6 +94,7 @@ class ConnectionWindow(PageWindow):
                 buffer_length = float(self.buffer_duration_input.text())
                 (self.basewindow.device['emg_buf'], self.basewindow.device['aux_buf']) = self.basewindow.device['reader'].create_shared_matrix(buffer_duration=buffer_length, emg_shared_matrix_name="Electromyography"+str(rnd_number), aux_shared_matrix_name='Auxilliary'+str(rnd_number))
                 self.basewindow.device['name'] = 'Delsys'
+                self.basewindow.device['frequency']=2000
             elif self.sensor == "SiFi":
                 # do SiFi stuff
                 self.basewindow.device['name'] = 'SiFi'
