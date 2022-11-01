@@ -89,7 +89,7 @@ class SelectModelTrainingWindow(PageWindow):
     def make_automatic_model(self):
         window_size = float(self.select_window_size_input.text())*1000
         window_increment = float(self.select_window_inc_input.text())*1000
-        frequency = 1259 # TODO: dont't just hardcode this for delsys
+        frequency = 2000 # TODO: dont't just hardcode this for delsys
 
         active_threshold = self.select_active_threshold_toggle.isChecked()
         rejection_threshold = self.select_rejection_threshold.text()
