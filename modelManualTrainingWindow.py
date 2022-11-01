@@ -104,7 +104,7 @@ class ManualModelTrainingWindow(PageWindow):
         else:
             rejection_threshold = float(rejection_threshold) # use specific threshold
 
-        frequency = 1259 # TODO: dont't just hardcode this for delsys
+        frequency = 2000 # TODO: dont't just hardcode this for delsys
 
         window_parameters = [window_size, window_increment, frequency]
         self.basewindow.model = EMGClassifier("manual", [features, classifier], data_filename, window_parameters, active_threshold, rejection_threshold)
